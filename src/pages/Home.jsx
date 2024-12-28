@@ -1,4 +1,4 @@
-import { Center, Heading, HStack, Image, VStack } from '@chakra-ui/react'
+import { Center, Heading, Image, VStack } from '@chakra-ui/react'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import Nav from '../components/Nav'
 import Posts from '../components/Posts'

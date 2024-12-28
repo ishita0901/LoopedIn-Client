@@ -2,7 +2,6 @@ import {
   Box,
   useColorModeValue,
   Stack,
-  Button,
 } from '@chakra-ui/react';
 import { useContext } from 'react';
 import { BiHome } from 'react-icons/bi'

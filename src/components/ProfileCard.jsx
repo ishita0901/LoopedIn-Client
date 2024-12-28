@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { Card, CardHeader, Box, Flex, Avatar, Heading, Text, Button, HStack } from '@chakra-ui/react'
-import { Link } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 
 function ProfileCard({userName,userImage}) {

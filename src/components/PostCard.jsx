@@ -1,6 +1,6 @@
 import { Flex, Card, CardHeader, CardBody, CardFooter, Button, Avatar, Box, Heading, Text, Image } from '@chakra-ui/react'
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { BiLike, BiChat, BiShare } from 'react-icons/bi'
+import { BiLike, BiShare } from 'react-icons/bi'
 import { Link } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 import LikeService from '../services/LikeService'
