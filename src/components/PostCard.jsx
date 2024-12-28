@@ -20,7 +20,7 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
         } catch (error) {
             console.log(error)
         }
-    }, [likeService, user.id, postId]); // Added dependencies
+    }, [likeService, user.id, postId, getLikes]); // Added dependencies
 
     const handleUnlike = useCallback(async () => {
         try {
@@ -29,7 +29,7 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
         } catch (error) {
             console.log(error)
         }
-    }, [likeService, user.id, postId]); // Added dependencies
+    }, [likeService, user.id, postId, getLikes]); // Added dependencies
 
     const getLikes = useCallback(async () => {
         try {
