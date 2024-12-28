@@ -7,30 +7,12 @@ import LikeService from '../services/LikeService'
 import CommentModal from './CommentModal'
 
 function PostCard({ userName, userImage, description, postImage, postId, userId }) {
-    // Memoize the likeService instance to prevent recreation on each render
     const likeService = useMemo(() => new LikeService(), []);
     const { user } = useContext(AuthContext)
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState([])
 
-    const handleLike = useCallback(async () => {
-        try {
-            await likeService.add(user.id, postId, localStorage.getItem("token"))
-            getLikes()
-        } catch (error) {
-            console.log(error)
-        }
-    }, [likeService, user.id, postId, getLikes]); // Added dependencies
-
-    const handleUnlike = useCallback(async () => {
-        try {
-            await likeService.delete(user.id, postId, localStorage.getItem("token"))
-            getLikes()
-        } catch (error) {
-            console.log(error)
-        }
-    }, [likeService, user.id, postId, getLikes]); // Added dependencies
-
+    // Define getLikes first since it's used in handleLike and handleUnlike
     const getLikes = useCallback(async () => {
         try {
             const result = await likeService.getLikesByPost(postId, localStorage.getItem("token"))
@@ -40,6 +22,24 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
         }
     }, [likeService, postId])
 
+    const handleLike = useCallback(async () => {
+        try {
+            await likeService.add(user.id, postId, localStorage.getItem("token"))
+            getLikes()
+        } catch (error) {
+            console.log(error)
+        }
+    }, [likeService, user.id, postId, getLikes]);
+
+    const handleUnlike = useCallback(async () => {
+        try {
+            await likeService.delete(user.id, postId, localStorage.getItem("token"))
+            getLikes()
+        } catch (error) {
+            console.log(error)
+        }
+    }, [likeService, user.id, postId, getLikes]);
+
     const checkIsLiked = useCallback(async () => {
         try {
             const result = await likeService.isLiked(user.id, postId, localStorage.getItem("token"))
@@ -47,13 +47,14 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
         } catch (error) {
             console.log(error)
         }
-    }, [likeService, user.id, postId]) // Removed likes.length as it's not needed
+    }, [likeService, user.id, postId])
 
     useEffect(() => {
         checkIsLiked()
         getLikes()
     }, [checkIsLiked, getLikes])
 
+    
     return (
         <Card maxW='lg'>
             <CardHeader as={Link} to={`/profile/${userId}`}>
