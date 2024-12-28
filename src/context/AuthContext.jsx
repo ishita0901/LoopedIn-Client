@@ -1,12 +1,11 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import jwtDecode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const [isAuthenticated, setIsAuthenticated] = useState(
         localStorage.getItem("isAuthenticated") || false
     );
@@ -14,24 +13,25 @@ export const AuthProvider = ({ children }) => {
         JSON.parse(localStorage.getItem("user")) || {}
     );
 
-    const login = (token) => {
-        const decodedToken = jwtDecode(token);
-        setUser(decodedToken.user);
-        setIsAuthenticated(true);
-        localStorage.setItem("token",token)
-        localStorage.setItem("isAuthenticated", true);
-        localStorage.setItem("user", JSON.stringify(decodedToken.user));
-        navigate("/home")
-    };
-
-    const logout = () => {
+    // Memoize logout function to prevent recreation on each render
+    const logout = useCallback(() => {
         setIsAuthenticated(false);
         setUser({});
         localStorage.removeItem("isAuthenticated");
         localStorage.removeItem("user");
-        localStorage.removeItem("token")
-        navigate("/")
-    };
+        localStorage.removeItem("token");
+        navigate("/");
+    }, [navigate]);
+
+    const login = useCallback((token) => {
+        const decodedToken = jwtDecode(token);
+        setUser(decodedToken.user);
+        setIsAuthenticated(true);
+        localStorage.setItem("token", token);
+        localStorage.setItem("isAuthenticated", true);
+        localStorage.setItem("user", JSON.stringify(decodedToken.user));
+        navigate("/home");
+    }, [navigate]);
 
     useEffect(() => {
         const checkTokenExpired = () => {
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
                 const currentTime = Date.now() / 1000;
                 if (decodedToken.exp < currentTime) {
                     logout();
-                    console.log("token expired")
+                    console.log("token expired");
                 }
             }
         };
@@ -49,7 +49,12 @@ export const AuthProvider = ({ children }) => {
         if (isAuthenticated) {
             checkTokenExpired();
         }
-    }, [isAuthenticated]);
+
+        // Add cleanup function
+        return () => {
+            // Cleanup if needed
+        };
+    }, [isAuthenticated, logout]); // Added logout to dependencies
 
     const value = { isAuthenticated, login, logout, user };
 

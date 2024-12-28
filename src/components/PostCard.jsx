@@ -1,5 +1,5 @@
 import { Flex, Card, CardHeader, CardBody, CardFooter, Button, Avatar, Box, Heading, Text, Image } from '@chakra-ui/react'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState, useMemo } from 'react'
 import { BiLike, BiShare } from 'react-icons/bi'
 import { Link } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
@@ -7,39 +7,29 @@ import LikeService from '../services/LikeService'
 import CommentModal from './CommentModal'
 
 function PostCard({ userName, userImage, description, postImage, postId, userId }) {
-
-
-    const likeService = new LikeService()
+    // Memoize the likeService instance to prevent recreation on each render
+    const likeService = useMemo(() => new LikeService(), []);
     const { user } = useContext(AuthContext)
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState([])
 
-    const handleLike = async () => {
+    const handleLike = useCallback(async () => {
         try {
             await likeService.add(user.id, postId, localStorage.getItem("token"))
             getLikes()
         } catch (error) {
             console.log(error)
         }
-    }
+    }, [likeService, user.id, postId]); // Added dependencies
 
-    const handleUnlike = async () => {
+    const handleUnlike = useCallback(async () => {
         try {
             await likeService.delete(user.id, postId, localStorage.getItem("token"))
             getLikes()
         } catch (error) {
             console.log(error)
         }
-    }
-
-    const checkIsLiked = useCallback(async () => {
-        try {
-            const result = await likeService.isLiked(user.id, postId, localStorage.getItem("token"))
-            setIsLiked(result.data)
-        } catch (error) {
-            console.log(error)
-        }
-    }, [user.id, postId,likes.length])
+    }, [likeService, user.id, postId]); // Added dependencies
 
     const getLikes = useCallback(async () => {
         try {
@@ -48,13 +38,21 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
         } catch (error) {
             console.log(error)
         }
-    }, [postId])
+    }, [likeService, postId])
+
+    const checkIsLiked = useCallback(async () => {
+        try {
+            const result = await likeService.isLiked(user.id, postId, localStorage.getItem("token"))
+            setIsLiked(result.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }, [likeService, user.id, postId]) // Removed likes.length as it's not needed
 
     useEffect(() => {
         checkIsLiked()
         getLikes()
     }, [checkIsLiked, getLikes])
-
 
     return (
         <Card maxW='lg'>
@@ -62,10 +60,8 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
                 <Flex spacing='4'>
                     <Flex flex='1' gap='4' alignItems='center' flexWrap='wrap'>
                         <Avatar name={userName} src={userImage} />
-
                         <Box>
                             <Heading size='sm'>{userName}</Heading>
-
                         </Box>
                     </Flex>
                 </Flex>
@@ -82,7 +78,6 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
                     objectFit='contain'
                     src={postImage}
                     fallback={null}
-
                 />
             }
 
@@ -97,10 +92,10 @@ function PostCard({ userName, userImage, description, postImage, postId, userId 
             >
                 {
                     isLiked ?
-                        <Button onClick={()=>handleUnlike()} flex='1' colorScheme={'pink'} leftIcon={<BiLike />}>
+                        <Button onClick={handleUnlike} flex='1' colorScheme={'pink'} leftIcon={<BiLike />}>
                             Like {likes.length}
                         </Button>
-                        : <Button onClick={() => handleLike()} flex='1' variant='ghost' leftIcon={<BiLike />}>
+                        : <Button onClick={handleLike} flex='1' variant='ghost' leftIcon={<BiLike />}>
                             Like {likes.length}
                         </Button>
                 }
